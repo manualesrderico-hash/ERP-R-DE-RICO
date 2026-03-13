@@ -289,11 +289,10 @@ export const RetailVisionPOS = () => {
                             </div>
                         </button>
                     </div>
-                    <div className="w-1/3 flex flex-col items-center gap-2">
-                        <img src="/assets/logo.png" alt="R de Rico" className="w-10 h-10 object-contain drop-shadow-xl" />
-                        <div className="bg-black border border-white/10 px-6 py-1 rounded-2xl shadow-2x flex flex-col items-center">
-                            <span className="text-[7px] font-black uppercase text-white/40 tracking-[0.5em] mb-0.5">Transaccion Activa</span>
-                            <span className="text-xl font-black uppercase tracking-tighter italic text-[#c1d72e] drop-shadow-[0_0_8px_rgba(193,215,46,0.3)]">CUENTA #{(currentAccountNum || '----').slice(-4)}</span>
+                    <div className="w-1/3 flex items-center justify-center">
+                        <div className="bg-black border border-white/10 px-8 py-2 rounded-3xl shadow-2x flex flex-col items-center">
+                            <span className="text-[7px] font-black uppercase text-white tracking-[0.5em] mb-0.5">Transaccion Activa</span>
+                            <span className="text-4xl font-black uppercase tracking-tighter italic text-[#c1d72e] drop-shadow-[0_0_12px_rgba(193,215,46,0.4)]">CUENTA #{(currentAccountNum || '00').slice(-2)}</span>
                         </div>
                     </div>
                     <div className="w-1/3 flex justify-end">
