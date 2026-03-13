@@ -9,6 +9,7 @@ import { CONFIG } from './config';
 import { CategoryBar } from './components/CategoryBar';
 import { SalesReceipt } from './components/SalesReceipt';
 import { VisionVisor } from './components/VisionVisor';
+import { CheckoutScreen } from './components/CheckoutScreen';
 
 const INITIAL_CATEGORIES = [
     { name: "1.-EMPAQUE Y PAN BLANCO", icon: "🥖", visionEnabled: true },
@@ -73,6 +74,7 @@ export const RetailVisionPOS = () => {
     const [viewMode, setViewMode] = useState('CAMERA');
     const [currentPage, setCurrentPage] = useState(1);
     const [allOpenAccounts, setAllOpenAccounts] = useState([]);
+    const [showCheckout, setShowCheckout] = useState(false);
 
     // --- Hooks Personalizados ---
     const PRODUCTS = useMemo(() => initialProducts.map(p => ({
@@ -144,6 +146,12 @@ export const RetailVisionPOS = () => {
     // --- Lógica de Negocio (Tickets) ---
     const handleTicketAction = async (status, paymentMethod = null) => {
         if (cart.length === 0) return alert("El ticket esta vacio.");
+        
+        // Si no hay método de pago y se intenta cobrar, abrir pantalla de pago
+        if (status === 'PAID' && !paymentMethod) {
+            setShowCheckout(true);
+            return;
+        }
 
         try {
             const terminalId = selectedTerminal || 'T1';
@@ -162,6 +170,7 @@ export const RetailVisionPOS = () => {
             
             clearCart();
             generateNewAccountNum();
+            setShowCheckout(false);
         } catch (error) {
             console.error("Ticket action error:", error);
             alert(error.message);
@@ -339,6 +348,14 @@ export const RetailVisionPOS = () => {
                     handleHoldAccount={() => handleTicketAction('OPEN')} 
                 />
             </div>
+
+            {showCheckout && (
+                <CheckoutScreen 
+                    total={total}
+                    onConfirm={(method, received) => handleTicketAction('PAID', method)}
+                    onCancel={() => setShowCheckout(false)}
+                />
+            )}
 
             {showCorkboard && (
                 <OpenAccountsCorkboard

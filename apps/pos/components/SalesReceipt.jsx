@@ -58,27 +58,22 @@ export const SalesReceipt = ({ cart, removeFromCart, total, currentAccountNum, s
             </div>
 
             <div className="mt-6 pt-6 border-t-2 border-dashed border-gray-400 space-y-6">
-                <div className="flex justify-between items-end">
-                    <span className="text-sm font-bold uppercase text-gray-600">Total a Pagar</span>
-                    <span className="text-4xl font-black text-black tracking-tighter">${total.toFixed(2)}</span>
-                </div>
+                <button 
+                    onClick={() => handleCheckout()}
+                    className="w-full bg-black group relative overflow-hidden p-6 rounded-[35px] border-2 border-black transition-all hover:scale-[1.02] active:scale-95 shadow-[0_15px_40px_rgba(0,0,0,0.2)]"
+                >
+                    <div className="flex justify-between items-center relative z-10 px-2">
+                        <div className="text-left">
+                            <span className="block text-[10px] font-black uppercase tracking-[0.3em] text-[#c1d72e] mb-1">Total a Pagar</span>
+                            <span className="block text-3xl font-black text-white italic tracking-tighter">COBRAR</span>
+                        </div>
+                        <span className="text-4xl font-black text-[#c1d72e] tracking-tighter">${total.toFixed(2)}</span>
+                    </div>
+                    {/* Glow effect */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+                </button>
 
                 <div className="flex flex-col gap-3">
-                    <div className="grid grid-cols-2 gap-3">
-                        <button 
-                            onClick={() => handleCheckout('Efectivo')}
-                            className="bg-white border-2 border-black hover:bg-black hover:text-white p-4 flex flex-col items-center justify-center transition-all active:scale-95 group shadow-[4px_4px_0_rgba(0,0,0,1)] hover:shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]">
-                            <span className="text-xl mb-1 grayscale group-hover:grayscale-0">💵</span>
-                            <span className="text-[10px] font-bold uppercase tracking-widest">Efectivo</span>
-                        </button>
-                        <button 
-                            onClick={() => handleCheckout('Tarjeta')}
-                            className="bg-white border-2 border-black hover:bg-black hover:text-white p-4 flex flex-col items-center justify-center transition-all active:scale-95 group shadow-[4px_4px_0_rgba(0,0,0,1)] hover:shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]">
-                            <span className="text-xl mb-1 grayscale group-hover:grayscale-0">💳</span>
-                            <span className="text-[10px] font-bold uppercase tracking-widest">Tarjeta/QR</span>
-                        </button>
-                    </div>
-                    
                     <button 
                         onClick={handleHoldAccount}
                         className="w-full bg-[#c1d72e] border-2 border-black hover:bg-black hover:text-[#c1d72e] p-6 flex flex-col items-center justify-center transition-all active:scale-95 group shadow-[4px_4px_0_rgba(0,0,0,1)] hover:shadow-[2px_2px_0_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px] relative overflow-hidden">
