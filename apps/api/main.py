@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from modules.catalog.router import router as catalog_router
 from modules.pos.router import router as pos_router
 
@@ -24,6 +25,9 @@ async def health_check():
 
 app.include_router(catalog_router, prefix="/api/v1/catalog", tags=["Catalog"])
 app.include_router(pos_router, prefix="/api/v1/pos", tags=["POS"])
+
+# Montar carpeta de imágenes estáticas
+app.mount("/static/catalog", StaticFiles(directory="static/catalog"), name="static")
 
 if __name__ == "__main__":
     import uvicorn

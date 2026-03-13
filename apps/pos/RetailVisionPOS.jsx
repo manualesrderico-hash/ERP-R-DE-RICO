@@ -259,16 +259,43 @@ export const RetailVisionPOS = () => {
     }
 
     // --- Componentes Locales (Mantenidos para preservar Grid estable) ---
-    const ProductCard = ({ product }) => (
-        <button onClick={() => addToCart(product)} className="group relative bg-black/20 hover:bg-[#c1d72e] p-6 rounded-[35px] border border-white/5 transition-all duration-500 flex flex-col items-center gap-4 hover:scale-105 active:scale-95 shadow-xl hover:shadow-[#c1d72e]/20">
-            <div className="text-5xl group-hover:scale-110 transition-transform">{product.image}</div>
-            <div className="text-center">
-                <p className="text-[10px] font-black uppercase tracking-tighter text-white group-hover:text-black mb-1 line-clamp-1">{product.name}</p>
-                <p className="text-lg font-black text-[#c1d72e] group-hover:text-black italic font-mono">${(product.price || 0).toFixed(2)}</p>
-            </div>
-            <div className="absolute top-4 right-4 w-6 h-6 bg-white/5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><span className="text-black font-black text-xs">+</span></div>
-        </button>
-    );
+    const ProductCard = ({ product }) => {
+        const [imgStatus, setImgStatus] = useState('TRY_PNG'); // TRY_PNG, TRY_JPG, FALLBACK
+        const baseStaticUrl = CONFIG.API_BASE_URL.replace('/api/v1', '/static/catalog');
+        const pngUrl = `${baseStaticUrl}/Img1118_${product.sku}.png`;
+        const jpgUrl = `${baseStaticUrl}/Img1118_${product.sku}.jpg`;
+
+        return (
+            <button onClick={() => addToCart(product)} className="group relative bg-black/20 hover:bg-[#c1d72e] p-6 rounded-[35px] border border-white/5 transition-all duration-500 flex flex-col items-center gap-4 hover:scale-105 active:scale-95 shadow-xl hover:shadow-[#c1d72e]/20">
+                <div className="w-24 h-24 flex items-center justify-center">
+                    {imgStatus === 'TRY_PNG' && (
+                        <img 
+                            src={pngUrl} 
+                            alt={product.name} 
+                            className="w-full h-full object-contain drop-shadow-2xl"
+                            onError={() => setImgStatus('TRY_JPG')}
+                        />
+                    )}
+                    {imgStatus === 'TRY_JPG' && (
+                        <img 
+                            src={jpgUrl} 
+                            alt={product.name} 
+                            className="w-full h-full object-contain drop-shadow-2xl"
+                            onError={() => setImgStatus('FALLBACK')}
+                        />
+                    )}
+                    {imgStatus === 'FALLBACK' && (
+                        <div className="text-5xl group-hover:scale-110 transition-transform">{product.image}</div>
+                    )}
+                </div>
+                <div className="text-center">
+                    <p className="text-[10px] font-black uppercase tracking-tighter text-white group-hover:text-black mb-1 line-clamp-1">{product.name}</p>
+                    <p className="text-lg font-black text-[#c1d72e] group-hover:text-black italic font-mono">${(product.price || 0).toFixed(2)}</p>
+                </div>
+                <div className="absolute top-4 right-4 w-6 h-6 bg-white/5 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"><span className="text-black font-black text-xs">+</span></div>
+            </button>
+        );
+    };
 
     const ProductGrid = ({ category }) => {
         const filtered = PRODUCTS.filter(p => p.category === category);
