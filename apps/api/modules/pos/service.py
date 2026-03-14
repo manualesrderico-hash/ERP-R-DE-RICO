@@ -124,7 +124,12 @@ class POSService:
         # 1. Buscar ticket reservado, vacío y abierto
         result = await db.execute(
             select(models.Ticket)
-            .options(selectinload(models.Ticket.items))
+            .options(
+                selectinload(models.Ticket.items)
+                .selectinload(models.TicketItem.product)
+                .selectinload(Product.category),
+                selectinload(models.Ticket.session)
+            )
             .where(models.Ticket.session_id == session.id)
             .where(models.Ticket.status == "OPEN")
             .where(models.Ticket.total == 0.0)
@@ -148,10 +153,20 @@ class POSService:
         
         db_ticket.account_num = f"V{db_ticket.id:04d}"
         await db.commit()
-        await db.refresh(db_ticket)
         
-        db_ticket.terminal_id = session.terminal_id
-        db_ticket.items = []
-        return db_ticket
+        # Recuperar completo para la serialización Pydantic
+        result = await db.execute(
+            select(models.Ticket)
+            .options(
+                selectinload(models.Ticket.items)
+                .selectinload(models.TicketItem.product)
+                .selectinload(Product.category),
+                selectinload(models.Ticket.session)
+            )
+            .where(models.Ticket.id == db_ticket.id)
+        )
+        ticket_obj = result.scalar_one()
+        ticket_obj.terminal_id = session.terminal_id
+        return ticket_obj
 
 pos_service = POSService()

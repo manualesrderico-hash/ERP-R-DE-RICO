@@ -226,6 +226,7 @@ export const RetailVisionPOS = () => {
         } catch (error) {
             console.error("Ticket action error:", error);
             alert(error.message);
+            throw error; // Propagar para que CheckoutScreen interrumpa el proceso visual.
         }
     };
 
