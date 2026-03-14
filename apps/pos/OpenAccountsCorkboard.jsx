@@ -80,13 +80,13 @@ export const OpenAccountsCorkboard = ({ openAccounts, onSelectAccount, onClose }
                             {/* Contenido del Post-it */}
                             <div className="text-[#3d2b1f]">
                                 <div className="flex justify-between items-start mb-4">
-                                    <span className="text-5xl font-black opacity-20 font-mono">#{acc.id.slice(-2)}</span>
-                                    <span className="text-[10px] font-black bg-black/5 px-2 py-1 rounded-md uppercase tracking-widest">{acc.terminal}</span>
+                                    <span className="text-5xl font-black font-mono">#{acc.id.slice(-2)}</span>
+                                    <span className="text-xs font-black bg-black/5 px-2 py-1 rounded-md uppercase tracking-widest opacity-40">{acc.terminal}</span>
                                 </div>
-                                <h4 className="text-lg font-black uppercase tracking-tight leading-tight mb-2">
+                                <h4 className="text-lg font-black uppercase tracking-tight leading-tight mb-2 opacity-35">
                                     {acc.clientName || 'Cliente General'}
                                 </h4>
-                                <div className="space-y-1 opacity-60">
+                                <div className="space-y-1 opacity-35">
                                     <p className="text-[10px] font-bold italic uppercase flex items-center gap-2">
                                         👤 {acc.cashierName}
                                     </p>
@@ -97,8 +97,8 @@ export const OpenAccountsCorkboard = ({ openAccounts, onSelectAccount, onClose }
                             </div>
 
                             <div className="mt-auto pt-4 border-t border-[#3d2b1f]/10 flex justify-between items-end">
-                                <span className="text-xl font-black font-mono tracking-tighter">${acc.total.toFixed(2)}</span>
-                                <span className="text-[8px] font-black uppercase tracking-widest opacity-40">Ver Cuenta →</span>
+                                <span className="text-xl font-black font-mono tracking-tighter text-[#3d2b1f] opacity-45">${acc.total.toFixed(2)}</span>
+                                <span className="text-[8px] font-black uppercase tracking-widest opacity-30">Ver Cuenta →</span>
                             </div>
 
                             {/* Efecto de sombra para el papel */}
