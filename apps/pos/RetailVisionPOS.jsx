@@ -289,7 +289,7 @@ export const RetailVisionPOS = () => {
         const jpgUrl = `${baseStaticUrl}/Img1118_${product.sku}.jpg`;
 
         return (
-            <button onClick={() => addToCart(product)} className="group relative bg-black/20 hover:bg-[#c1d72e] p-3 rounded-[35px] border border-white/5 transition-all duration-500 flex flex-col items-center justify-between gap-2 hover:scale-105 active:scale-95 shadow-xl hover:shadow-[#c1d72e]/20 h-full w-full">
+            <button onClick={() => addToCart(product)} className="group relative bg-black hover:bg-[#c1d72e] p-3 rounded-[35px] border border-white/10 transition-all duration-500 flex flex-col items-center justify-between gap-2 hover:scale-105 active:scale-95 shadow-[0_4px_20px_rgba(0,0,0,0.6)] hover:shadow-[#c1d72e]/20 h-full w-full">
                 {/* Imagen expandida con menos márgenes */}
                 <div className="w-full h-32 flex items-center justify-center mt-1">
                     {imgStatus === 'TRY_PNG' && (
