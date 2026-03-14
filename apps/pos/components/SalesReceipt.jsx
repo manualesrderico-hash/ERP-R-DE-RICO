@@ -1,6 +1,20 @@
 import React from 'react';
 
-export const SalesReceipt = ({ cart, removeFromCart, total, currentAccountNum, selectedTerminal, handleCheckout, handleHoldAccount }) => {
+export const SalesReceipt = ({ cart, removeFromCart, updateQuantity, total, currentAccountNum, selectedTerminal, handleCheckout, handleHoldAccount }) => {
+    const handleQuantityClick = (item) => {
+        const input = window.prompt(`Ingrese la nueva cantidad para:\n${item.name}`, item.quantity || 1);
+        if (input !== null) {
+            const newQty = parseInt(input, 10);
+            if (!isNaN(newQty) && newQty > 0) {
+                updateQuantity(item.id, newQty);
+            } else if (newQty === 0) {
+                removeFromCart(item.id);
+            } else {
+                alert("Por favor, ingrese un número válido mayor a 0.");
+            }
+        }
+    };
+
     return (
         <div className="w-[420px] bg-[#fdfbf7] px-6 pt-6 pb-6 flex flex-col shadow-2xl relative border-l border-black/10 overflow-visible transition-all duration-500 text-black font-mono z-50">
             <div className="absolute top-[-14px] left-0 right-0 w-full overflow-hidden" style={{ height: '14px' }}>
@@ -32,7 +46,13 @@ export const SalesReceipt = ({ cart, removeFromCart, total, currentAccountNum, s
                     <div key={item.id} className="flex flex-col group animate-in slide-in-from-right-4 duration-300">
                         <div className="flex justify-between items-start">
                             <div className="flex gap-3 w-3/4">
-                                <div className="font-black min-w-[40px] text-right text-3xl leading-none">{item.quantity || 1}x</div>
+                                <div 
+                                    onClick={() => handleQuantityClick(item)}
+                                    className="font-black min-w-[40px] text-right text-3xl leading-none cursor-pointer hover:text-orange-500 hover:scale-110 active:scale-95 transition-all outline-none"
+                                    title="Modificar cantidad"
+                                >
+                                    {item.quantity || 1}x
+                                </div>
                                 <div>
                                     <p className="font-black text-lg uppercase leading-tight text-gray-900">{item.name}</p>
                                     <p className="text-base text-gray-500 uppercase">${(item.price || 0).toFixed(2)} c/u</p>

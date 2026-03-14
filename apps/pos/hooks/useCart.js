@@ -43,6 +43,12 @@ export const useCart = (PRODUCTS) => {
         });
     };
 
+    const updateQuantity = (productId, newQuantity) => {
+        setCart(prev => prev.map(item => 
+            item.id === productId ? { ...item, quantity: newQuantity } : item
+        ));
+    };
+
     const removeFromCart = (productId) => {
         setCart(prev => prev.filter(item => item.id !== productId));
     };
@@ -54,6 +60,7 @@ export const useCart = (PRODUCTS) => {
         setCart,
         total,
         addToCart,
+        updateQuantity,
         removeFromCart,
         clearCart
     };

@@ -87,7 +87,7 @@ export const RetailVisionPOS = () => {
         category: p.category ? (typeof p.category === 'string' ? p.category : p.category.name) : 'OTROS'
     })), [initialProducts]);
 
-    const { cart, setCart, total, addToCart, removeFromCart, clearCart } = useCart(PRODUCTS);
+    const { cart, setCart, total, addToCart, updateQuantity, removeFromCart, clearCart } = useCart(PRODUCTS);
     const { isScanning, setIsScanning } = useVision();
 
     // --- Efectos de Carga ---
@@ -394,6 +394,7 @@ export const RetailVisionPOS = () => {
                 <SalesReceipt 
                     cart={cart} 
                     removeFromCart={removeFromCart} 
+                    updateQuantity={updateQuantity}
                     total={total} 
                     currentAccountNum={currentAccountNum} 
                     selectedTerminal={selectedTerminal} 
