@@ -27,6 +27,16 @@ async def reserve_ticket(req: schemas.TerminalSessionBase, db: AsyncSession = De
 async def create_ticket(ticket: schemas.TicketCreate, db: AsyncSession = Depends(get_db)):
     return await pos_service.create_ticket(db, ticket)
 
+@router.get("/tickets", response_model=List[schemas.TicketResponse])
+async def get_tickets(
+    terminal_id: str = None, 
+    status: str = None, 
+    search: str = None, 
+    limit: int = 100, 
+    db: AsyncSession = Depends(get_db)
+):
+    return await pos_service.get_tickets(db, terminal_id, status, search, limit)
+
 @router.get("/tickets/open", response_model=List[schemas.TicketResponse])
 async def get_open_tickets(db: AsyncSession = Depends(get_db)):
     return await pos_service.get_open_tickets(db)

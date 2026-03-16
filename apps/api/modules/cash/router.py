@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+from typing import List
 
 from core.database import get_db
 from . import schemas, service
@@ -10,6 +11,14 @@ router = APIRouter()
 @router.post("/sessions/open", response_model=schemas.CashSessionResponse, status_code=201)
 async def abrir_sesion(datos: schemas.CashSessionCreate, db: AsyncSession = Depends(get_db)):
     return await service.abrir_sesion(db, datos)
+
+@router.get("/sessions/history", response_model=List[schemas.CashSessionResponse])
+async def obtener_historial_sesiones(
+    terminal_id: str = None, 
+    limit: int = 50, 
+    db: AsyncSession = Depends(get_db)
+):
+    return await service.obtener_historial_sesiones(db, terminal_id, limit)
 
 
 @router.get("/sessions/{terminal_id}/active", response_model=schemas.CashSessionResponse)

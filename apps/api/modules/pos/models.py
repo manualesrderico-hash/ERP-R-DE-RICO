@@ -27,6 +27,7 @@ class Ticket(Base):
     cash_session_id = Column(Integer, ForeignKey("cash_sessions.id"), nullable=True)
 
     session = relationship("TerminalSession", back_populates="tickets")
+    cash_session = relationship("CashSession", back_populates="tickets")
     items = relationship("TicketItem", back_populates="ticket")
 
 class TicketItem(Base):

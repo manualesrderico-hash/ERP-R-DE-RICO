@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { cashService, securityService } from '../services/cashService';
+import { CorteTicketTemplate } from './CorteTicketTemplate';
 
 // ─── Componentes de UI reutilizables ─────────────────────────────────────────
 
@@ -99,6 +100,7 @@ export const GestorDeCaja = ({ terminalId, onCajaHabilitada, onCajaDeshabilitada
     const [refrescando, setRefrescando] = useState(false);
     const [alerta, setAlerta] = useState(null);
     const [focusedField, setFocusedField] = useState(null); // 'fondo', 'movimiento', 'cash', 'credit', 'debit'
+    const cortePrintRef = useRef();
 
     const handleKeypadPress = (val) => {
         if (!focusedField) return;
@@ -135,6 +137,37 @@ export const GestorDeCaja = ({ terminalId, onCajaHabilitada, onCajaDeshabilitada
     const mostrarAlerta = (mensaje, tipo = 'error') => {
         setAlerta({ mensaje, tipo });
         setTimeout(() => setAlerta(null), 5000);
+    };
+
+    const handlePrintCorte = () => {
+        const printContent = cortePrintRef.current;
+        if (!printContent) return;
+        
+        const iframe = document.createElement('iframe');
+        iframe.style.position = 'fixed';
+        iframe.style.right = '0';
+        iframe.style.bottom = '0';
+        iframe.style.width = '0';
+        iframe.style.height = '0';
+        iframe.style.border = '0';
+        document.body.appendChild(iframe);
+
+        const doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write('<html><head><title>Reporte de Corte</title>');
+        doc.write('<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">');
+        doc.write('</head><body>');
+        doc.write(printContent.innerHTML);
+        doc.write('</body></html>');
+        doc.close();
+
+        setTimeout(() => {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+            setTimeout(() => {
+                document.body.removeChild(iframe);
+            }, 1000);
+        }, 250);
     };
 
     const actualizarResumen = useCallback(async () => {
@@ -300,6 +333,9 @@ export const GestorDeCaja = ({ terminalId, onCajaHabilitada, onCajaDeshabilitada
             setConfirmandoCierre(false);
             setResumen(resultado.resumen);
             onCajaDeshabilitada();
+            
+            // Disparar impresión automática del corte
+            setTimeout(handlePrintCorte, 500);
         } catch (e) {
             mostrarAlerta(e.message);
             setConfirmandoCierre(false);
@@ -592,14 +628,32 @@ export const GestorDeCaja = ({ terminalId, onCajaHabilitada, onCajaDeshabilitada
                                         <FilaDiferencia label="Débito" esperado={resumen?.total_debito} capturado={fisicoDebito} onFocus={() => setFocusedField('debit')} active={focusedField === 'debit'} />
                                     </div>
 
-                                    <button
-                                        onClick={handleNuevoTurno}
-                                        className="w-full bg-[#c1d72e]/10 hover:bg-[#c1d72e]/20 border border-[#c1d72e]/30 text-[#c1d72e] font-black py-3 rounded-xl uppercase tracking-widest text-xs transition"
-                                    >
-                                        + Agregar Nuevo Turno
-                                    </button>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={handlePrintCorte}
+                                            className="flex-1 bg-white/10 hover:bg-white/20 text-white font-black py-3 rounded-xl uppercase tracking-widest text-[10px] transition"
+                                        >
+                                            📄 Re-imprimir Reporte
+                                        </button>
+                                        <button
+                                            onClick={handleNuevoTurno}
+                                            className="flex-1 bg-[#c1d72e]/10 hover:bg-[#c1d72e]/20 border border-[#c1d72e]/30 text-[#c1d72e] font-black py-3 rounded-xl uppercase tracking-widest text-[10px] transition"
+                                        >
+                                            + Nuevo Turno
+                                        </button>
+                                    </div>
                                 </>
                             )}
+                        </div>
+
+                        {/* Plantilla de Impresión (Oculta) */}
+                        <div style={{ display: 'none' }}>
+                            <CorteTicketTemplate 
+                                ref={cortePrintRef} 
+                                resumen={resumen} 
+                                sesion={sesion}
+                                capturado={{ cash: fisicoCash, credit: fisicoCredito, debit: fisicoDebito }}
+                            />
                         </div>
 
                         {/* SECCIÓN C — INFORMACIÓN SEGÚN SISTEMA */}

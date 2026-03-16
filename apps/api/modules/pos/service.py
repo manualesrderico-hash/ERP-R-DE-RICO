@@ -97,7 +97,6 @@ class POSService:
         ticket_obj = result.scalar_one()
         ticket_obj.terminal_id = ticket_obj.session.terminal_id
         return ticket_obj
-
     async def get_open_tickets(self, db: AsyncSession):
         result = await db.execute(
             select(models.Ticket)
@@ -111,6 +110,30 @@ class POSService:
             .where(models.Ticket.total > 0)
             .order_by(models.Ticket.created_at.desc())
         )
+        tickets = result.scalars().all()
+        for t in tickets:
+            t.terminal_id = t.session.terminal_id
+        return tickets
+
+    async def get_tickets(self, db: AsyncSession, terminal_id: str = None, status: str = None, search: str = None, limit: int = 100):
+        query = select(models.Ticket).options(
+            selectinload(models.Ticket.items)
+            .selectinload(models.TicketItem.product)
+            .selectinload(Product.category),
+            selectinload(models.Ticket.session)
+        )
+        
+        if terminal_id:
+            query = query.join(models.TerminalSession).where(models.TerminalSession.terminal_id == terminal_id)
+        if status:
+            query = query.where(models.Ticket.status == status)
+        if search:
+            # Búsqueda por folio (account_num)
+            query = query.where(models.Ticket.account_num.ilike(f"%{search}%"))
+            
+        query = query.order_by(models.Ticket.created_at.desc()).limit(limit)
+        
+        result = await db.execute(query)
         tickets = result.scalars().all()
         for t in tickets:
             t.terminal_id = t.session.terminal_id

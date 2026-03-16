@@ -102,6 +102,7 @@ async def calcular_resumen(db: AsyncSession, session_id: int) -> schemas.CashSum
     for ticket in tickets_pagados:
         if not ticket.payment_details:
             continue
+            
         for pago in ticket.payment_details:
             metodo = (pago.get("method") or "").upper()
             tipo = (pago.get("type") or "").upper()
@@ -158,6 +159,33 @@ async def cerrar_sesion(
         diferencia_credito=round(datos.physical_credit - resumen.total_credito, 2),
         diferencia_debito=round(datos.physical_debit - resumen.total_debito, 2),
     )
+
+
+async def obtener_historial_sesiones(db: AsyncSession, terminal_id: str = None, limit: int = 50) -> list[models.CashSession]:
+    """Obtiene el historial de sesiones de caja cerradas con sus resúmenes y tickets."""
+    query = (
+        select(models.CashSession)
+        .where(models.CashSession.status == "CLOSED")
+        .options(
+            selectinload(models.CashSession.movements),
+            selectinload(models.CashSession.tickets)
+        )
+    )
+    
+    if terminal_id:
+        query = query.where(models.CashSession.terminal_id == terminal_id)
+        
+    query = query.order_by(models.CashSession.closed_at.desc()).limit(limit)
+    
+    resultado = await db.execute(query)
+    sesiones = resultado.scalars().all()
+    
+    # Inyectar resumen calculado a cada sesión para la auditoría
+    for sesion in sesiones:
+        resumen = await calcular_resumen(db, sesion.id)
+        sesion.resumen = resumen
+        
+    return sesiones
 
 
 # --- Helpers privados ---

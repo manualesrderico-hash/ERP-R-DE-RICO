@@ -20,6 +20,7 @@ import { VisionTrainingUI } from './pos/VisionTrainingUI';
 import { ProductMasterUI } from './inventory/ProductMasterUI';
 import { WarehouseManagerUI } from './inventory/WarehouseManagerUI';
 import { PurchaseManagerUI } from './inventory/PurchaseManagerUI';
+import { AuditoriaUI } from './AuditoriaUI';
 import REAL_PRODUCTS from '../importar_productos_AQUI.json';
 
 /**
@@ -80,6 +81,7 @@ export const ExperimentCenterUI = () => {
         { id: 'waiter', name: 'App Mesero', color: 'bg-rose-700', icon: '📱', access: ['ADMIN', 'WAITER'] },
         { id: 'driver', name: 'App Repartidor', color: 'bg-gray-800', icon: '📱', access: ['ADMIN', 'DRIVER', 'LOGISTICS'] },
         { id: 'seguridad_acceso', name: 'Seguridad y Acceso', color: 'bg-indigo-900', icon: '🔑', access: ['ADMIN', 'MANAGER'] },
+        { id: 'auditoria', name: 'Auditoría y Control', color: 'bg-slate-900', icon: '📋', access: ['ADMIN', 'MANAGER'] },
     ];
 
 
@@ -158,30 +160,7 @@ export const ExperimentCenterUI = () => {
                         </button>
                     ))}
 
-                    {!isSidebarCollapsed && (
-                        <>
-                            <div className="h-px bg-gray-900 my-6" />
 
-                            {/* Selector de Roles para Pruebas (Demo Only) */}
-                            <div className="p-4 bg-gray-900/40 rounded-3xl border border-gray-800/50">
-                                <p className="text-[8px] font-black text-gray-600 uppercase mb-3 tracking-widest text-center">Simulador de Roles (Prueba)</p>
-                                <select
-                                    value={userRole}
-                                    onChange={(e) => {
-                                        setUserRole(e.target.value);
-                                        setActiveModule('overview');
-                                    }}
-                                    className="w-full bg-black/60 border border-gray-800 p-3 rounded-xl outline-none text-[10px] font-black uppercase text-orange-500 cursor-pointer"
-                                >
-                                    <option value="ADMIN">SOCIO / ADMIN</option>
-                                    <option value="MANAGER">GERENTE / MANAGER</option>
-                                    <option value="BAKER">PANADERO / BAKER</option>
-                                    <option value="DRIVER">CHOFER / DRIVER</option>
-                                    <option value="WAITER">MESERO / WAITER</option>
-                                </select>
-                            </div>
-                        </>
-                    )}
                 </nav>
 
                 <div className={`mt-auto transition-all duration-500 ${isSidebarCollapsed ? 'opacity-0 scale-0 h-0 overflow-hidden' : 'opacity-100 scale-100'}`}>
@@ -267,6 +246,7 @@ export const ExperimentCenterUI = () => {
                         { activeModule === 'logistics' && <LogisticsDashboardUI pendingDeliveries={mockData.pendingDeliveries} vehicles={mockData.vehicles} drivers={mockData.drivers} /> }
                         {activeModule === 'driver' && <DriverAppUI activeRoute={{ orders: [] }} currentDriver={{ name: 'Juan Pérez' }} />}
                         {activeModule === 'seguridad_acceso' && <SeguridadAccesoUI />}
+                        {activeModule === 'auditoria' && <AuditoriaUI />}
                     </div>
 
                 </div>

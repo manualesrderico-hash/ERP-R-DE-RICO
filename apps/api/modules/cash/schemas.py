@@ -27,6 +27,15 @@ class CashSessionCreate(BaseModel):
     opening_float: float
 
 
+# --- Tickets Simplificados para Auditoría ---
+class TicketBasicResponse(BaseModel):
+    id: int
+    account_num: str
+    total: float
+    status: str
+    model_config = ConfigDict(from_attributes=True)
+
+
 class CashSessionResponse(BaseModel):
     id: int
     terminal_id: str
@@ -37,6 +46,8 @@ class CashSessionResponse(BaseModel):
     opened_at: datetime
     closed_at: Optional[datetime] = None
     movements: List[CashMovementResponse] = []
+    tickets: List[TicketBasicResponse] = []
+    resumen: Optional['CashSummaryResponse'] = None
     model_config = ConfigDict(from_attributes=True)
 
 

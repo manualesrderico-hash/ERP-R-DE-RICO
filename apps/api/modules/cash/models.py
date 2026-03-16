@@ -26,6 +26,7 @@ class CashSession(Base):
     physical_debit = Column(Float, nullable=True)
 
     movements = relationship("CashMovement", back_populates="session", cascade="all, delete-orphan")
+    tickets = relationship("Ticket", primaryjoin="CashSession.id == Ticket.cash_session_id", back_populates="cash_session")
 
 
 class CashMovement(Base):

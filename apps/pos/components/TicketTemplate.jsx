@@ -28,7 +28,7 @@ export const TicketTemplate = forwardRef(({ ticket, cart, total, payments }, ref
             <div className="text-center font-bold text-[12px] mb-0.5 uppercase">R de Rico</div>
             <div className="text-center text-[8px] mb-1">
                 {today}<br/>
-                No. Cuenta: {(ticket?.account_num || '---').slice(-2)}
+                No. Cuenta: {ticket?.account_num || '---'}
             </div>
 
             <div className="dotted-line"></div>
