@@ -25,8 +25,16 @@ async def abrir_sesion(db: AsyncSession, datos: schemas.CashSessionCreate) -> mo
     )
     db.add(nueva_sesion)
     await db.commit()
-    await db.refresh(nueva_sesion)
-    return nueva_sesion
+    # Cargar preventivamente las relaciones tras el commit para que estén disponibles en el Response
+    resultado = await db.execute(
+        select(models.CashSession)
+        .where(models.CashSession.id == nueva_sesion.id)
+        .options(
+            selectinload(models.CashSession.movements),
+            selectinload(models.CashSession.tickets)
+        )
+    )
+    return resultado.scalar_one()
 
 
 async def obtener_sesion_activa(db: AsyncSession, terminal_id: str) -> models.CashSession | None:
@@ -42,7 +50,10 @@ async def _obtener_sesion_activa(db: AsyncSession, terminal_id: str) -> models.C
             models.CashSession.terminal_id == terminal_id,
             models.CashSession.status == "OPEN",
         )
-        .options(selectinload(models.CashSession.movements))
+        .options(
+            selectinload(models.CashSession.movements),
+            selectinload(models.CashSession.tickets)
+        )
     )
     return resultado.scalar_one_or_none()
 
@@ -194,7 +205,10 @@ async def _obtener_sesion_por_id(db: AsyncSession, session_id: int) -> models.Ca
     resultado = await db.execute(
         select(models.CashSession)
         .where(models.CashSession.id == session_id)
-        .options(selectinload(models.CashSession.movements))
+        .options(
+            selectinload(models.CashSession.movements),
+            selectinload(models.CashSession.tickets)
+        )
     )
     sesion = resultado.scalar_one_or_none()
     if not sesion:

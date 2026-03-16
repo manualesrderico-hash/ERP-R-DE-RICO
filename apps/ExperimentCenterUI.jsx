@@ -55,12 +55,14 @@ export const ExperimentCenterUI = () => {
     const [categories, setCategories] = useState(INITIAL_CATEGORIES);
     const [userRole, setUserRole] = useState('ADMIN'); 
     const [userName, setUserName] = useState('');
+    const [userId, setUserId] = useState(null);
     const [activeModule, setActiveModule] = useState('overview');
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
-    const handleLogin = ({ role, name }) => {
-        setUserRole(role);
-        setUserName(name || '');
+    const handleLogin = (user) => {
+        setUserRole(user.role);
+        setUserName(user.name || '');
+        setUserId(user.id);
         setIsAuthenticated(true);
     };
 
@@ -224,6 +226,7 @@ export const ExperimentCenterUI = () => {
                                 <RetailVisionPOS 
                                     initialCategories={categories} 
                                     initialProducts={REAL_PRODUCTS}
+                                    currentUser={{ id: userId, name: userName, role: userRole }}
                                 />
                             </div>
                         )}

@@ -23,7 +23,7 @@ export const LoginUI = ({ onLogin }) => {
         try {
             const userData = await securityService.validatePin(pin);
             onLogin({ 
-                email: userData.name, 
+                id: userData.id,
                 role: userData.role,
                 name: userData.name
             });

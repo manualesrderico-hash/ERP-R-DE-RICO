@@ -69,14 +69,14 @@ const AlertaInterna = ({ mensaje, tipo = 'error', onClose }) => {
 
 // ─── Componente Principal ─────────────────────────────────────────────────────
 
-export const GestorDeCaja = ({ terminalId, onCajaHabilitada, onCajaDeshabilitada, onClose, sesionInicial }) => {
+export const GestorDeCaja = ({ terminalId, onCajaHabilitada, onCajaDeshabilitada, onClose, sesionInicial, currentUser }) => {
     // Estado de la sesión
     const [sesion, setSesion] = useState(sesionInicial || null);
     const [resumen, setResumen] = useState(null);
 
     // Estado Sección A - Apertura de turno
     const [pinInput, setPinInput] = useState('');
-    const [empleado, setEmpleado] = useState(null);
+    const [empleado, setEmpleado] = useState(currentUser || null);
     const [fondoInput, setFondoInput] = useState('');
     const [fondoConfirmado, setFondoConfirmado] = useState(!!sesionInicial);
     const [confirmandoFondo, setConfirmandoFondo] = useState(false);

@@ -66,7 +66,7 @@ const terminals = [
     { id: 'CAJA', name: 'CAJA', icon: '/assets/pos_register.png' }
 ];
 
-export const RetailVisionPOS = () => {
+export const RetailVisionPOS = ({ currentUser }) => {
     // --- Estado ---
     const [selectedTerminal, setSelectedTerminal] = useState(null);
     const [showCorkboard, setShowCorkboard] = useState(false);
@@ -520,6 +520,7 @@ export const RetailVisionPOS = () => {
             {showGestorCaja && (
                 <GestorDeCaja
                     terminalId={selectedTerminal}
+                    currentUser={currentUser}
                     onCajaHabilitada={(sessionId) => {
                         setIsCashEnabled(true);
                         setCashSessionId(sessionId);
