@@ -7,13 +7,15 @@ export const GestionPersonal = ({ onClose, isSection = false }) => {
     const [error, setError] = useState(null);
     const [view, setView] = useState('list'); // 'list' or 'form'
     const [editingEmployee, setEditingEmployee] = useState(null);
+    const [profiles, setProfiles] = useState([]);
     const [numpadValue, setNumpadValue] = useState('');
     
     // Form state
     const [formData, setFormData] = useState({
         name: '',
         employee_code: '',
-        role: 'CAJERO'
+        role: 'CAJERO',
+        profile_id: null
     });
 
     useEffect(() => {
@@ -23,8 +25,12 @@ export const GestionPersonal = ({ onClose, isSection = false }) => {
     const loadEmployees = async () => {
         setLoading(true);
         try {
-            const data = await securityService.listEmployees();
-            setEmployees(data);
+            const [empData, profData] = await Promise.all([
+                securityService.listEmployees(),
+                securityService.listProfiles()
+            ]);
+            setEmployees(empData);
+            setProfiles(profData);
         } catch (err) {
             setError(err.message);
         } finally {
@@ -38,12 +44,13 @@ export const GestionPersonal = ({ onClose, isSection = false }) => {
             setFormData({
                 name: emp.name,
                 employee_code: emp.employee_code,
-                role: emp.role
+                role: emp.role,
+                profile_id: emp.profile_id
             });
             setNumpadValue(emp.employee_code);
         } else {
             setEditingEmployee(null);
-            setFormData({ name: '', employee_code: '', role: 'CAJERO' });
+            setFormData({ name: '', employee_code: '', role: 'CAJERO', profile_id: null });
             setNumpadValue('');
         }
         setView('form');
@@ -107,13 +114,13 @@ export const GestionPersonal = ({ onClose, isSection = false }) => {
         <div className={containerClasses}>
             <div className={modalClasses}>
                 
-                {/* Header */}
-                <div className="p-8 border-b border-white/5 flex justify-between items-center bg-black/20">
+                {/* Header Subordinado */}
+                <div className="p-6 border-b border-white/5 flex justify-between items-center bg-black/20">
                     <div>
-                        <h2 className="text-3xl font-black uppercase italic tracking-tighter text-white">
-                            GESTOR DE <span className="text-[#c1d72e]">CLAVES DE ACCESO</span>
+                        <h2 className="text-xl font-black uppercase italic tracking-tighter text-white/90">
+                            GESTOR DE <span className="text-[#c1d72e]/80">CLAVES DE ACCESO</span>
                         </h2>
-                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-[0.4em] mt-1 italic">
+                        <p className="text-[8px] font-bold text-gray-600 uppercase tracking-[0.4em] mt-0.5 italic">
                             Administración de Accesos y Claves
                         </p>
                     </div>
@@ -185,15 +192,16 @@ export const GestionPersonal = ({ onClose, isSection = false }) => {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <label className="text-[9px] font-black uppercase text-gray-500 tracking-widest block px-2">Rol del Sistema</label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {['CAJERO', 'SUPERVISOR', 'ADMIN'].map(r => (
+                                    <label className="text-[9px] font-black uppercase text-gray-500 tracking-widest block px-2">Perfil Asignado</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {profiles.map(p => (
                                             <button 
-                                                key={r}
-                                                onClick={() => setFormData({...formData, role: r})}
-                                                className={`py-3 rounded-2xl text-[8px] font-black uppercase tracking-widest border transition-all ${formData.role === r ? 'bg-orange-500 border-orange-500 text-black shadow-lg shadow-orange-500/20' : 'bg-white/5 border-white/10 text-gray-500 hover:border-white/20'}`}
+                                                key={p.id}
+                                                type="button"
+                                                onClick={() => setFormData({...formData, role: p.name, profile_id: p.id})}
+                                                className={`py-3 px-4 rounded-2xl text-[8px] font-black uppercase tracking-widest border transition-all truncate ${formData.profile_id === p.id || (formData.role === p.name && !formData.profile_id) ? 'bg-[#c1d72e] border-[#c1d72e] text-black shadow-lg shadow-[#c1d72e]/20' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/20'}`}
                                             >
-                                                {r}
+                                                {p.name}
                                             </button>
                                         ))}
                                     </div>

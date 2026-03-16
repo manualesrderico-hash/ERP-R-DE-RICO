@@ -7,6 +7,12 @@ class SecurityService {
         return res.json();
     }
 
+    async listProfiles() {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/security/profiles`);
+        if (!res.ok) throw new Error("Error cargando perfiles de seguridad");
+        return res.json();
+    }
+
     async createEmployee(employeeData) {
         const res = await fetch(`${CONFIG.API_BASE_URL}/security/employees`, {
             method: 'POST',

@@ -1,9 +1,94 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from fastapi import HTTPException
 
 from . import models, schemas
 
+
+# --- Gestión de Perfiles ---
+
+async def listar_perfiles(db: AsyncSession) -> list[models.SecurityProfile]:
+    """Obtiene todos los perfiles registrados."""
+    resultado = await db.execute(select(models.SecurityProfile))
+    return resultado.scalars().all()
+
+
+async def crear_perfil(db: AsyncSession, datos: schemas.ProfileCreate) -> models.SecurityProfile:
+    """Crea un nuevo perfil de seguridad."""
+    perfil = models.SecurityProfile(**datos.model_dump())
+    db.add(perfil)
+    await db.commit()
+    await db.refresh(perfil)
+    return perfil
+
+
+async def actualizar_perfil(
+    db: AsyncSession, perfil_id: int, datos: schemas.ProfileUpdate
+) -> models.SecurityProfile:
+    """Actualiza un perfil existente."""
+    resultado = await db.execute(select(models.SecurityProfile).where(models.SecurityProfile.id == perfil_id))
+    perfil = resultado.scalar_one_or_none()
+    if not perfil:
+        raise HTTPException(status_code=404, detail="Perfil no encontrado")
+    
+    # Protección: No permitir cambiar el nombre de perfiles del sistema
+    if perfil.is_system and datos.name and datos.name != perfil.name:
+        raise HTTPException(status_code=400, detail="No se puede cambiar el nombre de un perfil del sistema")
+    
+    if datos.name is not None:
+        perfil.name = datos.name
+    if datos.description is not None:
+        perfil.description = datos.description
+    if datos.permissions is not None:
+        perfil.permissions = datos.permissions
+        
+    await db.commit()
+    await db.refresh(perfil)
+    return perfil
+
+
+async def eliminar_perfil(db: AsyncSession, perfil_id: int) -> dict:
+    """Elimina un perfil si no es del sistema y no tiene empleados vinculados."""
+    resultado = await db.execute(select(models.SecurityProfile).where(models.SecurityProfile.id == perfil_id))
+    perfil = resultado.scalar_one_or_none()
+    if not perfil:
+        raise HTTPException(status_code=404, detail="Perfil no encontrado")
+    
+    if perfil.is_system:
+        raise HTTPException(status_code=400, detail="No se pueden eliminar perfiles del sistema")
+        
+    # Verificar si hay empleados vinculados
+    res_emp = await db.execute(select(models.Employee).where(models.Employee.profile_id == perfil_id))
+    if res_emp.scalar_one_or_none():
+        raise HTTPException(
+            status_code=400, 
+            detail="No se puede eliminar el perfil porque tiene empleados vinculados. Reasigne a los empleados primero."
+        )
+
+    await db.delete(perfil)
+    await db.commit()
+    return {"message": "Perfil eliminado correctamente"}
+
+
+async def sembrar_perfiles_base(db: AsyncSession):
+    """Crea los perfiles por defecto si no existen."""
+    perfiles = [
+        {"name": "ADMIN", "description": "Acceso total al sistema", "permissions": {"all": "full"}, "is_system": True},
+        {"name": "MANAGER", "description": "Gestión operativa y reportes", "permissions": {"pos": "full", "inventory": "full", "cash": "full"}, "is_system": True},
+        {"name": "CAJERO", "description": "Operación de ventas y caja", "permissions": {"pos": "full", "cash": "limited"}, "is_system": True},
+    ]
+    
+    for p_data in perfiles:
+        resultado = await db.execute(select(models.SecurityProfile).where(models.SecurityProfile.name == p_data["name"]))
+        if not resultado.scalar_one_or_none():
+            nuevo = models.SecurityProfile(**p_data)
+            db.add(nuevo)
+    
+    await db.commit()
+
+
+# --- Gestión de Empleados ---
 
 async def crear_empleado(db: AsyncSession, datos: schemas.EmployeeCreate) -> models.Employee:
     """Crea un nuevo empleado con su PIN de acceso."""
@@ -17,17 +102,26 @@ async def crear_empleado(db: AsyncSession, datos: schemas.EmployeeCreate) -> mod
         name=datos.name,
         employee_code=datos.employee_code,
         role=datos.role,
+        profile_id=datos.profile_id
     )
     db.add(nuevo_empleado)
     await db.commit()
-    await db.refresh(nuevo_empleado)
-    return nuevo_empleado
+    
+    # Carga preventiva para evitar lazy loading error
+    resultado = await db.execute(
+        select(models.Employee)
+        .where(models.Employee.id == nuevo_empleado.id)
+        .options(selectinload(models.Employee.profile))
+    )
+    return resultado.scalar_one()
 
 
 async def listar_empleados(db: AsyncSession) -> list[models.Employee]:
     """Devuelve todos los empleados activos del sistema."""
     resultado = await db.execute(
-        select(models.Employee).where(models.Employee.is_active == True)
+        select(models.Employee)
+        .where(models.Employee.is_active == True)
+        .options(selectinload(models.Employee.profile))
     )
     return resultado.scalars().all()
 
@@ -35,13 +129,13 @@ async def listar_empleados(db: AsyncSession) -> list[models.Employee]:
 async def validar_pin(db: AsyncSession, pin: str) -> schemas.PINValidateResponse:
     """
     Valida el PIN ingresado por el cajero.
-    Devuelve el nombre y rol si el PIN es correcto, o error 401 si no lo es.
+    Devuelve el nombre y objeto de perfil si el PIN es correcto.
     """
     resultado = await db.execute(
         select(models.Employee).where(
             models.Employee.employee_code == pin,
             models.Employee.is_active == True,
-        )
+        ).options(selectinload(models.Employee.profile))
     )
     empleado = resultado.scalar_one_or_none()
     if not empleado:
@@ -50,7 +144,8 @@ async def validar_pin(db: AsyncSession, pin: str) -> schemas.PINValidateResponse
     return schemas.PINValidateResponse(
         id=empleado.id,
         name=empleado.name,
-        role=empleado.role,
+        role=empleado.profile.name if empleado.profile else empleado.role,
+        profile=empleado.profile
     )
 
 
@@ -71,14 +166,21 @@ async def actualizar_empleado(
         empleado.employee_code = datos.employee_code
     if datos.role is not None:
         empleado.role = datos.role
+    if datos.profile_id is not None:
+        empleado.profile_id = datos.profile_id
 
     await db.commit()
-    await db.refresh(empleado)
-    return empleado
+    
+    resultado = await db.execute(
+        select(models.Employee)
+        .where(models.Employee.id == empleado_id)
+        .options(selectinload(models.Employee.profile))
+    )
+    return resultado.scalar_one()
 
 
 async def desactivar_empleado(db: AsyncSession, empleado_id: int) -> dict:
-    """Desactiva un empleado (nunca se borra de la BD para conservar historial)."""
+    """Desactiva un empleado."""
     resultado = await db.execute(
         select(models.Employee).where(models.Employee.id == empleado_id)
     )
